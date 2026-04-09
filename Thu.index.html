@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Công cụ chuyển đổi link Shopee</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #fff0f5;
+      color: #333;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    h2 { color: #e84393; text-align: center; margin: 16px 0 8px; }
+    .subtitle { text-align: center; font-size: 14px; color: #888; margin-bottom: 20px; }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+    }
+    .input-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .input-row span { font-weight: bold; color: #e84393; min-width: 20px; }
+    .input-row input {
+      flex: 1;
+      padding: 8px 12px;
+      border: 1.5px solid #f9c;
+      border-radius: 10px;
+      font-size: 13px;
+      outline: none;
+    }
+    .input-row input:focus { border-color: #e84393; }
+    .paste-btn {
+      background: #fff0f5;
+      border: 1px solid #f9c;
+      border-radius: 8px;
+      padding: 6px 10px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .status { font-size: 12px; color: red; margin-left: 28px; margin-top: -6px; margin-bottom: 6px; }
+    .status.ok { color: green; }
+    .btn-main {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background: linear-gradient(135deg, #e84393, #ff6eb4);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .btn-main:hover { opacity: 0.9; }
+    .btn-secondary {
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-size: 13px;
+      margin-right: 6px;
+    }
+    .voucher-box { background: #fff8fb; border-left: 4px solid #e84393; padding: 10px 14px; border-radius: 8px; margin-bottom: 8px; }
+    .voucher-box .date { font-size: 12px; color: #999; }
+    .voucher-box .desc { font-size: 14px; font-weight: 600; color: #333; }
+    .section-title { font-size: 15px; font-weight: 700; color: #e84393; margin-bottom: 10px; }
+    .result-link { word-break: break-all; color: #0070f3; font-size: 13px; }
+    .result-box { background: #f0fff4; border: 1px solid #b2f5c8; border-radius: 10px; padding: 10px; margin-top: 10px; display: none; }
+    .copy-btn { margin-top: 6px; background: #e84393; color: white; border: none; border-radius: 8px; padding: 6px 12px; cursor: pointer; font-size: 12px; }
+    .bulk-textarea {
+      width: 100%;
+      height: 80px;
+      border: 1.5px solid #f9c;
+      border-radius: 10px;
+      padding: 8px;
+      font-size: 13px;
+      resize: vertical;
+      outline: none;
+      margin-bottom: 8px;
+    }
+    .social-link { display: block; text-align: center; color: #e84393; font-size: 14px; margin-top: 10px; text-decoration: none; }
+    .social-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <h2>🛍️ Chuyển đổi link Shopee</h2>
+  <p class="subtitle">Dán link để nhận mã giảm giá ^0^</p>
+
+  <!-- Dán hàng loạt -->
+  <div class="card">
+    <div class="section-title">🚀 Dán danh sách link hàng loạt</div>
+    <textarea class="bulk-textarea" id="bulkInput" placeholder="Dán nhiều link Shopee vào đây, mỗi link một dòng..."></textarea>
+    <button class="btn-secondary" onclick="fillBulk()">✨ Điền vào 5 ô</button>
+    <button class="btn-secondary" onclick="document.getElementById('bulkInput').value=''">🗑️ Xóa</button>
+  </div>
+
+  <!-- 5 ô nhập link -->
+  <div class="card" id="linkForm">
+    <div class="section-title">🔗 Nhập link từng ô</div>
+    <div id="inputs"></div>
+    <div style="display:flex; gap:8px; margin-top:10px;">
+      <button class="btn-secondary" onclick="clearAll()">🗑️ Xóa hết</button>
+      <button class="btn-main" onclick="convertAll()" style="flex:1">🔄 Chuyển đổi</button>
+    </div>
+    <div class="result-box" id="resultBox">
+      <div class="section-title">✅ Kết quả:</div>
+      <div id="resultContent"></div>
+    </div>
+  </div>
+
+  <!-- Bảng tin voucher -->
+  <div class="card">
+    <div class="section-title">📋 Bảng tin Voucher</div>
+    <div class="voucher-box">
+      <div class="date">⏰ Áp dụng: 4.4.2026</div>
+      <div class="desc">🎫 Giảm 20% - tối đa 50k | Đơn từ 200k</div>
+    </div>
+    <div class="voucher-box">
+      <div class="date">⏰ Áp dụng: 4.4.2026</div>
+      <div class="desc">🎫 Giảm 20% - tối đa 100k | Đơn từ 300k</div>
+    </div>
+  </div>
+
+  <!-- Link nhóm -->
+  <a class="social-link" href="https://www.instagram.com/" target="_blank">💬 Tham gia nhóm báo sale, deal</a>
+
+  <script>
+    const SHOPEE_AFFILIATE = "YOUR_AFFILIATE_ID"; // Thay bằng ID affiliate của bạn
+    const NUM_INPUTS = 5;
+
+    // Tạo 5 ô input
+    const inputsDiv = document.getElementById('inputs');
+    for (let i = 1; i <= NUM_INPUTS; i++) {
+      inputsDiv.innerHTML += `
+        <div class="input-row">
+          <span>${i}</span>
+          <input type="text" id="inp${i}" placeholder="Dán link Shopee vào đây..." oninput="validateLink(${i})"/>
+          <button class="paste-btn" onclick="pasteToInput(${i})">Dán 📋</button>
+        </div>
+        <div class="status" id="status${i}"></div>
+      `;
+    }
+
+    // Validate link Shopee
+    function validateLink(i) {
+      const val = document.getElementById(`inp${i}`).value.trim();
+      const statusEl = document.getElementById(`status${i}`);
+      if (!val) { statusEl.textContent = ''; return; }
+      if (!val.startsWith('http')) {
+        statusEl.textContent = '⚠️ Link sai định dạng!';
+        statusEl.className = 'status';
+      } else if (!val.includes('shopee.vn')) {
+        statusEl.textContent = '❌ Không phải Shopee';
+        statusEl.className = 'status';
+      } else {
+        statusEl.textContent = '✅ Hợp lệ';
+        statusEl.className = 'status ok';
+      }
+    }
+
+    // Dán từ clipboard
+    async function pasteToInput(i) {
+      try {
+        const text = await navigator.clipboard.readText();
+        document.getElementById(`inp${i}`).value = text;
+        validateLink(i);
+      } catch(e) {
+        alert('Không thể đọc clipboard. Vui lòng dán thủ công!');
+      }
+    }
+
+    // Điền bulk vào 5 ô
+    function fillBulk() {
+      const lines = document.getElementById('bulkInput').value.trim().split('\n').filter(l => l.trim());
+      for (let i = 1; i <= NUM_INPUTS; i++) {
+        document.getElementById(`inp${i}`).value = lines[i-1] || '';
+        validateLink(i);
+      }
+    }
+
+    // Xóa hết
+    function clearAll() {
+      for (let i = 1; i <= NUM_INPUTS; i++) {
+        document.getElementById(`inp${i}`).value = '';
+        document.getElementById(`status${i}`).textContent = '';
+      }
+      document.getElementById('resultBox').style.display = 'none';
+    }
+
+    // Chuyển đổi link (thêm affiliate tag)
+    function convertLink(url) {
+      try {
+        const u = new URL(url);
+        u.searchParams.set('af_id', SHOPEE_AFFILIATE);
+        return u.toString();
+      } catch(e) {
+        return url;
+      }
+    }
+
+    // Chuyển đổi tất cả
+    function convertAll() {
+      let results = '';
+      let hasValid = false;
+      for (let i = 1; i <= NUM_INPUTS; i++) {
+        const val = document.getElementById(`inp${i}`).value.trim();
+        if (val && val.includes('shopee.vn')) {
+          const converted = convertLink(val);
+          results += `<p><b>Link ${i}:</b><br/><a class="result-link" href="${converted}" target="_blank">${converted}</a><br/>
+            <button class="copy-btn" onclick="copyText('${converted}')">📋 Copy</button></p><br/>`;
+          hasValid = true;
+        }
+      }
+      const box = document.getElementById('resultBox');
+      if (hasValid) {
+        document.getElementById('resultContent').innerHTML = results;
+        box.style.display = 'block';
+      } else {
+        alert('Vui lòng nhập ít nhất 1 link Shopee hợp lệ!');
+      }
+    }
+
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(() => alert('Đã copy!'));
+    }
+  </script>
+</body>
+</html>
